@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rule Robots: Word Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1b1f3b;
+    --paper:#f6f4ec;
+    --teal:#1fb6a8;
+    --teal-dark:#0f8f84;
+    --amber:#f6b942;
+    --coral:#ff6b5e;
+    --mint:#3fcf7f;
+    --lav:#8b7ff0;
+    --card:#ffffff;
+    --line:#e3ded0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Nunito',sans-serif;
+    background:
+      radial-gradient(circle at 12% 8%, rgba(139,127,240,.18), transparent 40%),
+      radial-gradient(circle at 90% 85%, rgba(31,182,168,.18), transparent 45%),
+      var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    padding:18px 14px 40px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+  h1{
+    font-family:'Baloo 2',sans-serif;
+    font-size:clamp(24px,6vw,34px);
+    margin:6px 0 2px;
+    color:var(--ink);
+    line-height:1.05;
+  }
+  .tag{font-size:14px;color:#5b5b6b;margin-bottom:18px;}
+  .bot{font-size:34px;transform:translateY(3px);margin-right:6px;display:inline-block;}
+  .menu{display:grid;gap:12px;}
+  .mode-btn{
+    display:flex;align-items:center;gap:14px;
+    background:var(--card);border:2px solid var(--line);border-radius:18px;
+    padding:16px;text-align:left;cursor:pointer;font-family:'Nunito',sans-serif;
+    transition:transform .12s ease, box-shadow .12s ease;
+    box-shadow:0 2px 0 var(--line);
+  }
+  .mode-btn:active{transform:translateY(2px);box-shadow:none;}
+  .mode-btn .icon{
+    font-size:28px;width:48px;height:48px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:14px;flex:none;
+  }
+  .mode-btn.a .icon{background:#e6f8f5;}
+  .mode-btn.b .icon{background:#fef3e0;}
+  .mode-btn.c .icon{background:#efeafe;}
+  .mode-btn.d .icon{background:#ffece9;}
+  .mode-btn.e .icon{background:#e4f9ec;}
+  .mode-btn h3{margin:0 0 2px;font-family:'Baloo 2';font-size:19px;}
+  .mode-btn p{margin:0;font-size:13px;color:#666;}
+
+  .card{background:var(--card);border-radius:22px;padding:22px 20px 20px;border:2px solid var(--line);box-shadow:0 3px 0 var(--line);}
+  .topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .backbtn{border:none;background:none;font-size:14px;color:var(--teal-dark);font-weight:700;cursor:pointer;padding:6px 4px;}
+  .progress-pips{display:flex;gap:6px;}
+  .pip{width:9px;height:9px;border-radius:50%;background:var(--line);}
+  .pip.done{background:var(--mint);}
+  .pip.now{background:var(--amber);}
+
+  .sentence{
+    font-family:'Baloo 2';
+    font-size:20px;
+    line-height:1.6;
+    text-align:center;
+    margin:14px 0 18px;
+    padding:16px 10px;
+    background:#fbfaf5;
+    border-radius:14px;
+    border:2px solid var(--line);
+  }
+  .sentence .blank{
+    display:inline-block;
+    min-width:70px;
+    border-bottom:2.5px solid var(--ink);
+    margin:0 4px;
+  }
+
+  .qtitle{font-family:'Baloo 2';font-size:18px;margin:0 0 4px;text-align:center;}
+  .qsub{font-size:13px;color:#777;text-align:center;margin-bottom:8px;}
+
+  .options{display:grid;gap:10px;margin-top:6px;}
+  .opt{
+    background:#fbfaf5;border:2px solid var(--line);border-radius:14px;
+    padding:13px 16px;font-size:17px;font-weight:700;font-family:'Baloo 2';
+    text-align:center;cursor:pointer;transition:transform .1s ease;
+  }
+  .opt:active{transform:scale(0.98);}
+  .opt.correct{background:#e4f9ec;border-color:var(--mint);color:#177a41;}
+  .opt.wrong{background:#ffece9;border-color:var(--coral);color:#a13327;}
+  .opt.disabled{pointer-events:none;opacity:.55;}
+
+  .wordgrid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:10px 0 16px;}
+  .wordchip{
+    background:#fbfaf5;border:2px solid var(--line);border-radius:12px;
+    padding:10px 16px;font-family:'Baloo 2';font-weight:700;font-size:16px;
+    cursor:pointer;
+  }
+  .wordchip.picked-correct{background:#e4f9ec;border-color:var(--mint);color:#177a41;}
+  .wordchip.picked-wrong{background:#ffece9;border-color:var(--coral);color:#a13327;}
+  .wordchip.disabled{pointer-events:none;}
+
+  .feedback{margin-top:14px;padding:12px 14px;border-radius:14px;font-weight:700;font-size:14.5px;display:none;}
+  .feedback.show{display:block;}
+  .feedback.good{background:#e4f9ec;color:#177a41;}
+  .feedback.bad{background:#fff3e0;color:#8a5a12;}
+
+  .nextbtn{display:none;margin-top:16px;width:100%;background:var(--ink);color:#fff;border:none;border-radius:14px;padding:14px;font-family:'Baloo 2';font-size:17px;font-weight:700;cursor:pointer;}
+  .nextbtn.show{display:block;}
+
+  .done-screen{text-align:center;padding:14px 4px;}
+  .done-screen .big-emoji{font-size:54px;}
+  .done-screen h2{font-family:'Baloo 2';margin:8px 0 4px;}
+  .done-screen p{color:#666;margin:0 0 18px;}
+  .retry-btn{background:var(--teal);color:#fff;border:none;border-radius:14px;padding:13px 20px;font-family:'Baloo 2';font-weight:700;font-size:16px;cursor:pointer;margin-right:8px;}
+  .home-btn{background:#fff;color:var(--ink);border:2px solid var(--line);border-radius:14px;padding:13px 20px;font-family:'Baloo 2';font-weight:700;font-size:16px;cursor:pointer;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><span class="bot">🤖</span>Rule Robots: Word Lab</h1>
+  <div class="tag">Word Lab — pick a machine to fix!</div>
+  <div id="menu" class="menu"></div>
+  <div id="game" style="display:none;"></div>
+</div>
+
+<script>
+const menuEl = document.getElementById('menu');
+const gameEl = document.getElementById('game');
+
+function shuffleArr(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+const modes = [
+  {id:'subject', cls:'a', icon:'🔎', title:'Subject Finder', desc:'Spot who or what the sentence is about.'},
+  {id:'verb', cls:'b', icon:'⚡', title:'Verb Hunter', desc:'Find the action word.'},
+  {id:'pronoun', cls:'c', icon:'🧭', title:'Pronoun Picker', desc:'Choose the word that fits — he/him, she/her, they/them.'},
+  {id:'noun', cls:'d', icon:'🐾', title:'Noun Corral', desc:'Round up the common nouns.'},
+  {id:'adj', cls:'e', icon:'🎨', title:'Describe It', desc:'Find the word that describes something.'},
+];
+
+function renderMenu(){
+  gameEl.style.display='none';
+  menuEl.style.display='grid';
+  menuEl.innerHTML = modes.map(m=>`
+    <button class="mode-btn ${m.cls}" onclick="startMode('${m.id}')">
+      <div class="icon">${m.icon}</div>
+      <div><h3>${m.title}</h3><p>${m.desc}</p></div>
+    </button>
+  `).join('');
+}
+
+/* ---------------- DATA ---------------- */
+
+const subjectQuestions = [
+  {sentence:"The dog runs fast.", correct:"The dog", opts:["The dog","runs fast","fast"]},
+  {sentence:"My little sister sings songs.", correct:"My little sister", opts:["My little sister","sings songs","songs"]},
+  {sentence:"Birds fly south in winter.", correct:"Birds", opts:["Birds","fly south","in winter"]},
+  {sentence:"The red car stopped suddenly.", correct:"The red car", opts:["The red car","stopped suddenly","suddenly"]},
+  {sentence:"Our class visited the farm.", correct:"Our class", opts:["Our class","visited the farm","the farm"]},
+  {sentence:"A hungry cat meowed loudly.", correct:"A hungry cat", opts:["A hungry cat","meowed loudly","loudly"]},
+];
+
+const verbQuestions = [
+  {sentence:"The dog runs fast.", correct:"runs", opts:["dog","runs","fast"]},
+  {sentence:"Birds fly south in winter.", correct:"fly", opts:["Birds","fly","winter"]},
+  {sentence:"She sings a happy song.", correct:"sings", opts:["She","sings","happy"]},
+  {sentence:"The children played outside.", correct:"played", opts:["children","played","outside"]},
+  {sentence:"He jumped over the puddle.", correct:"jumped", opts:["He","jumped","puddle"]},
+  {sentence:"We ate lunch at noon.", correct:"ate", opts:["We","ate","noon"]},
+];
+
+const pronounQuestions = [
+  {before:"", blank:"", after:"likes to read books.", correct:"He", opts:["He","Him"]},
+  {before:"Give the pencil to", after:".", correct:"her", opts:["she","her"]},
+  {before:"", after:"are going to the park.", correct:"They", opts:["Them","They"]},
+  {before:"Mom made lunch for", after:".", correct:"us", opts:["we","us"]},
+  {before:"", after:"scored a goal.", correct:"He", opts:["Him","He"]},
+  {before:"The teacher gave", after:"a sticker.", correct:"her", opts:["she","her"]},
+];
+
+const nounQuestions = [
+  {words:["Anna","happy","dog","run"], correct:"dog"},
+  {words:["Tami","basket","quickly","blue"], correct:"basket"},
+  {words:["jump","teacher","Ohio","fast"], correct:"teacher"},
+  {words:["book","read","tall","Max"], correct:"book"},
+  {words:["Max","school","tiny","fast"], correct:"school"},
+];
+
+const adjQuestions = [
+  {sentence:"The fluffy cat slept.", correct:"fluffy", opts:["fluffy","cat","slept"]},
+  {sentence:"She wore a red hat.", correct:"red", opts:["She","wore","red"]},
+  {sentence:"The tall boy jumped high.", correct:"tall", opts:["tall","boy","jumped"]},
+  {sentence:"We saw a tiny frog.", correct:"tiny", opts:["We","saw","tiny"]},
+];
+
+/* ---------------- STATE ---------------- */
+let state = {mode:null, idx:0, score:0, total:0, answered:false};
+const bankFor = id => id==='subject'?subjectQuestions : id==='verb'?verbQuestions : id==='pronoun'?pronounQuestions : id==='noun'?nounQuestions : adjQuestions;
+
+function startMode(id){
+  state = {mode:id, idx:0, score:0, total: bankFor(id).length, answered:false};
+  menuEl.style.display='none';
+  gameEl.style.display='block';
+  renderQuestion();
+}
+
+function pips(){
+  let html = '<div class="progress-pips">';
+  for(let i=0;i<state.total;i++){
+    let cls = i<state.idx ? 'done' : (i===state.idx?'now':'');
+    html += `<div class="pip ${cls}"></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+function topbar(){
+  return `<div class="topbar"><button class="backbtn" onclick="renderMenu()">&larr; Machines</button>${pips()}</div>`;
+}
+
+function renderQuestion(){
+  state.answered=false;
+  if(state.mode==='subject') renderChoiceSentence(subjectQuestions[state.idx], "Which words are the sentence's subject — who or what it's about?");
+  else if(state.mode==='verb') renderChoiceSentence(verbQuestions[state.idx], "Which word is the action (verb)?");
+  else if(state.mode==='pronoun') renderPronoun(pronounQuestions[state.idx]);
+  else if(state.mode==='noun') renderNoun(nounQuestions[state.idx]);
+  else renderChoiceSentence(adjQuestions[state.idx], "Which word describes something in the sentence?");
+}
+
+/* ---- Subject / Verb / Adjective share this renderer ---- */
+let currentChoiceOpts = [];
+function renderChoiceSentence(q, subtitle){
+  currentChoiceOpts = shuffleArr(q.opts);
+  gameEl.innerHTML = `
+    <div class="card">
+      ${topbar()}
+      <div class="qtitle">${subtitle}</div>
+      <div class="sentence">${q.sentence}</div>
+      <div class="options" id="optWrap">
+        ${currentChoiceOpts.map((o,i)=>`<div class="opt" data-i="${i}" onclick="pickChoice(${i})">${o}</div>`).join('')}
+      </div>
+      <div class="feedback" id="fb"></div>
+      <button class="nextbtn" id="nextBtn" onclick="nextQ()">Next →</button>
+    </div>
+  `;
+}
+function currentBank(){
+  return state.mode==='subject'?subjectQuestions : state.mode==='verb'?verbQuestions : adjQuestions;
+}
+function pickChoice(i){
+  if(state.answered) return;
+  state.answered = true;
+  const q = currentBank()[state.idx];
+  const opts = document.querySelectorAll('#optWrap .opt');
+  opts.forEach(o=>o.classList.add('disabled'));
+  const fb = document.getElementById('fb');
+  if(currentChoiceOpts[i] === q.correct){
+    opts[i].classList.add('correct');
+    state.score++;
+    fb.className='feedback good show';
+    fb.textContent = `Yes! "${q.correct}" is right. 🎉`;
+  } else {
+    opts[i].classList.add('wrong');
+    currentChoiceOpts.forEach((o,idx)=>{ if(o===q.correct) opts[idx].classList.add('correct'); });
+    fb.className='feedback bad show';
+    fb.textContent = `Close! The answer is "${q.correct}".`;
+  }
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+/* ---- Pronoun mode ---- */
+let currentPronounOpts = [];
+function renderPronoun(q){
+  currentPronounOpts = shuffleArr(q.opts);
+  gameEl.innerHTML = `
+    <div class="card">
+      ${topbar()}
+      <div class="qtitle">Pick the word that fits the blank.</div>
+      <div class="sentence">${q.before} <span class="blank">____</span> ${q.after}</div>
+      <div class="options" id="optWrap">
+        ${currentPronounOpts.map((o,i)=>`<div class="opt" data-i="${i}" onclick="pickPronoun(${i})">${o}</div>`).join('')}
+      </div>
+      <div class="feedback" id="fb"></div>
+      <button class="nextbtn" id="nextBtn" onclick="nextQ()">Next →</button>
+    </div>
+  `;
+}
+function pickPronoun(i){
+  if(state.answered) return;
+  state.answered = true;
+  const q = pronounQuestions[state.idx];
+  const opts = document.querySelectorAll('#optWrap .opt');
+  opts.forEach(o=>o.classList.add('disabled'));
+  const fb = document.getElementById('fb');
+  if(currentPronounOpts[i] === q.correct){
+    opts[i].classList.add('correct');
+    state.score++;
+    fb.className='feedback good show';
+    fb.textContent = `Yes! "${q.correct}" sounds right there. 🎉`;
+  } else {
+    opts[i].classList.add('wrong');
+    currentPronounOpts.forEach((o,idx)=>{ if(o===q.correct) opts[idx].classList.add('correct'); });
+    fb.className='feedback bad show';
+    fb.textContent = `Close! "${q.correct}" is the one that fits.`;
+  }
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+/* ---- Noun Corral mode (word grid, tap the common noun) ---- */
+let currentNounWords = [];
+function renderNoun(q){
+  currentNounWords = shuffleArr(q.words);
+  gameEl.innerHTML = `
+    <div class="card">
+      ${topbar()}
+      <div class="qtitle">Tap the common noun (a person, place, or thing).</div>
+      <div class="wordgrid" id="wordWrap">
+        ${currentNounWords.map((w,i)=>`<div class="wordchip" data-i="${i}" onclick="pickNoun(${i})">${w}</div>`).join('')}
+      </div>
+      <div class="feedback" id="fb"></div>
+      <button class="nextbtn" id="nextBtn" onclick="nextQ()">Next →</button>
+    </div>
+  `;
+}
+function pickNoun(i){
+  if(state.answered) return;
+  state.answered = true;
+  const q = nounQuestions[state.idx];
+  const chips = document.querySelectorAll('#wordWrap .wordchip');
+  chips.forEach(c=>c.classList.add('disabled'));
+  const fb = document.getElementById('fb');
+  if(currentNounWords[i] === q.correct){
+    chips[i].classList.add('picked-correct');
+    state.score++;
+    fb.className='feedback good show';
+    fb.textContent = `Yes! "${q.correct}" is a common noun. 🎉`;
+  } else {
+    chips[i].classList.add('picked-wrong');
+    currentNounWords.forEach((w,idx)=>{ if(w===q.correct) chips[idx].classList.add('picked-correct'); });
+    fb.className='feedback bad show';
+    fb.textContent = `Close! "${q.correct}" is the common noun — a person, place, or thing.`;
+  }
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+/* ---- Navigation ---- */
+function nextQ(){
+  state.idx++;
+  if(state.idx >= state.total) renderDone();
+  else renderQuestion();
+}
+
+function renderDone(){
+  const pct = Math.round((state.score/state.total)*100);
+  let emoji = '🌟', msg = 'Great effort — every round makes the machines easier!';
+  if(pct===100){ emoji='🏆'; msg = 'Perfect score! You out-smarted every robot!'; }
+  else if(pct>=70){ emoji='🎉'; msg='Awesome work — you\'re getting really strong at this!'; }
+  gameEl.innerHTML = `
+    <div class="card done-screen">
+      <div class="big-emoji">${emoji}</div>
+      <h2>${state.score} / ${state.total}</h2>
+      <p>${msg}</p>
+      <button class="retry-btn" onclick="startMode('${state.mode}')">Play Again</button>
+      <button class="home-btn" onclick="renderMenu()">Choose Machine</button>
+    </div>
+  `;
+}
+
+renderMenu();
+</script>
+</body>
+</html>

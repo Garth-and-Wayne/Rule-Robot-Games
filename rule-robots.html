@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rule Robots: Number Lab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1b1f3b;
+    --paper:#f6f4ec;
+    --teal:#1fb6a8;
+    --teal-dark:#0f8f84;
+    --amber:#f6b942;
+    --coral:#ff6b5e;
+    --mint:#3fcf7f;
+    --lav:#8b7ff0;
+    --card:#ffffff;
+    --line:#e3ded0;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Nunito',sans-serif;
+    background:
+      radial-gradient(circle at 12% 8%, rgba(139,127,240,.18), transparent 40%),
+      radial-gradient(circle at 90% 85%, rgba(31,182,168,.18), transparent 45%),
+      var(--paper);
+    color:var(--ink);
+    min-height:100vh;
+    padding:18px 14px 40px;
+  }
+  .wrap{max-width:640px;margin:0 auto;}
+  h1{
+    font-family:'Baloo 2',sans-serif;
+    font-size:clamp(24px,6vw,34px);
+    margin:6px 0 2px;
+    color:var(--ink);
+    line-height:1.05;
+  }
+  .tag{
+    font-size:14px;
+    color:#5b5b6b;
+    margin-bottom:18px;
+  }
+  .bot{
+    display:inline-block;
+    font-size:34px;
+    transform:translateY(3px);
+    margin-right:6px;
+  }
+  .menu{
+    display:grid;
+    gap:12px;
+  }
+  .mode-btn{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    background:var(--card);
+    border:2px solid var(--line);
+    border-radius:18px;
+    padding:16px 16px;
+    text-align:left;
+    cursor:pointer;
+    font-family:'Nunito',sans-serif;
+    transition:transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+    box-shadow:0 2px 0 var(--line);
+  }
+  .mode-btn:active{transform:translateY(2px);box-shadow:none;}
+  .mode-btn .icon{
+    font-size:30px;
+    width:48px;height:48px;
+    display:flex;align-items:center;justify-content:center;
+    border-radius:14px;
+    flex:none;
+  }
+  .mode-btn.a .icon{background:#e6f8f5;}
+  .mode-btn.b .icon{background:#fef3e0;}
+  .mode-btn.c .icon{background:#efeafe;}
+  .mode-btn h3{margin:0 0 2px;font-family:'Baloo 2';font-size:19px;}
+  .mode-btn p{margin:0;font-size:13px;color:#666;}
+
+  .card{
+    background:var(--card);
+    border-radius:22px;
+    padding:22px 20px 20px;
+    border:2px solid var(--line);
+    box-shadow:0 3px 0 var(--line);
+  }
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .backbtn{
+    border:none;background:none;
+    font-size:14px;color:var(--teal-dark);
+    font-weight:700;cursor:pointer;
+    padding:6px 4px;
+  }
+  .progress-pips{display:flex;gap:6px;}
+  .pip{width:9px;height:9px;border-radius:50%;background:var(--line);}
+  .pip.done{background:var(--mint);}
+  .pip.now{background:var(--amber);}
+
+  .qtitle{
+    font-family:'Baloo 2';
+    font-size:19px;
+    margin:0 0 14px;
+  }
+
+  .frames{
+    display:flex;
+    gap:18px;
+    justify-content:center;
+    margin:14px 0 18px;
+    flex-wrap:wrap;
+  }
+  .frame{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    grid-template-rows:repeat(2,1fr);
+    gap:5px;
+    width:150px;
+    height:64px;
+    padding:6px;
+    border:2.5px solid var(--ink);
+    border-radius:8px;
+    background:#fbfaf5;
+  }
+  .dot{
+    width:100%;height:100%;
+    border-radius:50%;
+  }
+  .dot.filled.teal{background:var(--teal);}
+  .dot.filled.amber{background:var(--amber);}
+  .dot.empty{background:transparent;}
+
+  .frame-label{
+    text-align:center;
+    font-size:12px;
+    color:#777;
+    margin-top:4px;
+    font-weight:700;
+  }
+  .frame-col{display:flex;flex-direction:column;align-items:center;}
+
+  .options{
+    display:grid;
+    gap:10px;
+    margin-top:6px;
+  }
+  .opt{
+    background:#fbfaf5;
+    border:2px solid var(--line);
+    border-radius:14px;
+    padding:13px 16px;
+    font-size:17px;
+    font-weight:700;
+    font-family:'Baloo 2';
+    text-align:center;
+    cursor:pointer;
+    transition:transform .1s ease;
+  }
+  .opt:active{transform:scale(0.98);}
+  .opt.correct{background:#e4f9ec;border-color:var(--mint);color:#177a41;}
+  .opt.wrong{background:#ffece9;border-color:var(--coral);color:#a13327;}
+  .opt.disabled{pointer-events:none;opacity:.55;}
+
+  .feedback{
+    margin-top:14px;
+    padding:12px 14px;
+    border-radius:14px;
+    font-weight:700;
+    font-size:14.5px;
+    display:none;
+  }
+  .feedback.show{display:block;}
+  .feedback.good{background:#e4f9ec;color:#177a41;}
+  .feedback.bad{background:#fff3e0;color:#8a5a12;}
+
+  .nextbtn{
+    display:none;
+    margin-top:16px;
+    width:100%;
+    background:var(--ink);
+    color:#fff;
+    border:none;
+    border-radius:14px;
+    padding:14px;
+    font-family:'Baloo 2';
+    font-size:17px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .nextbtn.show{display:block;}
+
+  .table-wrap{overflow-x:auto;margin:10px 0 16px;}
+  table.rule-table{
+    border-collapse:collapse;
+    width:100%;
+    font-family:'Baloo 2';
+  }
+  table.rule-table td{
+    border:2px solid var(--ink);
+    text-align:center;
+    padding:10px 4px;
+    font-size:17px;
+    min-width:44px;
+  }
+  table.rule-table tr:first-child td{background:#efeafe;}
+  table.rule-table tr:last-child td{background:#fbfaf5;font-weight:800;}
+  .miss{color:#bbb;}
+
+  .rule-input-row{
+    display:flex;align-items:center;gap:10px;justify-content:center;
+    margin-top:6px;
+  }
+  .rule-input-row input{
+    width:90px;
+    font-size:18px;
+    font-family:'Baloo 2';
+    text-align:center;
+    padding:10px;
+    border-radius:10px;
+    border:2px solid var(--line);
+  }
+  .checkbtn{
+    background:var(--teal);
+    color:#fff;border:none;
+    border-radius:10px;
+    padding:11px 18px;
+    font-family:'Baloo 2';
+    font-weight:700;font-size:15px;
+    cursor:pointer;
+  }
+
+  .hopline{
+    position:relative;
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin:18px 0 10px;
+    flex-wrap:wrap;
+  }
+  .hop{
+    width:52px;height:52px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Baloo 2';font-weight:700;font-size:16px;
+    border:2.5px solid var(--ink);
+    background:#fbfaf5;
+  }
+  .hop.given{background:var(--lav);color:#fff;border-color:var(--lav);}
+  .hop.blank{background:#fff;color:#bbb;border-style:dashed;}
+
+  .scorebar{
+    display:flex;align-items:center;gap:8px;
+    font-family:'Baloo 2';
+    font-size:14px;
+    color:#666;
+    margin-bottom:8px;
+  }
+  .star{color:var(--amber);}
+
+  .done-screen{text-align:center;padding:14px 4px;}
+  .done-screen .big-emoji{font-size:54px;}
+  .done-screen h2{font-family:'Baloo 2';margin:8px 0 4px;}
+  .done-screen p{color:#666;margin:0 0 18px;}
+  .retry-btn{
+    background:var(--teal);color:#fff;border:none;
+    border-radius:14px;padding:13px 20px;
+    font-family:'Baloo 2';font-weight:700;font-size:16px;
+    cursor:pointer;margin-right:8px;
+  }
+  .home-btn{
+    background:#fff;color:var(--ink);border:2px solid var(--line);
+    border-radius:14px;padding:13px 20px;
+    font-family:'Baloo 2';font-weight:700;font-size:16px;
+    cursor:pointer;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><span class="bot">🤖</span>Rule Robots</h1>
+  <div class="tag">Number Lab — pick a machine to fix!</div>
+
+  <div id="menu" class="menu"></div>
+  <div id="game" style="display:none;"></div>
+</div>
+
+<script>
+const menuEl = document.getElementById('menu');
+const gameEl = document.getElementById('game');
+
+function shuffleArr(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+const modes = [
+  {id:'ten', cls:'a', icon:'🔟', title:'Ten Frame Fix-It', desc:'Make a ten to solve the addition fact.'},
+  {id:'rule', cls:'b', icon:'🧩', title:'Crack the Code', desc:'Find the robot\'s secret rule and finish the table.'},
+  {id:'hop', cls:'c', icon:'🐸', title:'Hop Counter', desc:'Skip-count to fill in the missing hops.'},
+];
+
+function renderMenu(){
+  gameEl.style.display='none';
+  menuEl.style.display='grid';
+  menuEl.innerHTML = modes.map(m=>`
+    <button class="mode-btn ${m.cls}" onclick="startMode('${m.id}')">
+      <div class="icon">${m.icon}</div>
+      <div><h3>${m.title}</h3><p>${m.desc}</p></div>
+    </button>
+  `).join('');
+}
+
+/* ---------------- DATA ---------------- */
+
+function tenFrameHTML(n, colorClass){
+  let dots = '';
+  for(let i=0;i<10;i++){
+    if(i<n) dots += `<div class="dot filled ${colorClass}"></div>`;
+    else dots += `<div class="dot empty"></div>`;
+  }
+  return `<div class="frame">${dots}</div>`;
+}
+
+const tenQuestions = [
+  {a:8,b:5}, {a:9,b:7}, {a:7,b:8}, {a:6,b:8}, {a:5,b:8}, {a:9,b:5}
+].map(q=>{
+  const sum = q.a+q.b;
+  const need = 10-q.a; // moved from b to a
+  const remainder = q.b-need;
+  const correct = `10 + ${remainder} = ${sum}`;
+  let distractors = new Set();
+  distractors.add(`10 + ${remainder+1} = ${sum+1}`);
+  distractors.add(`${q.a-1} + ${q.b+1} = ${sum}`);
+  distractors.add(`10 + ${Math.max(remainder-1,0)} = ${sum-1}`);
+  const distractorList = Array.from(distractors).slice(0,2);
+  return {a:q.a,b:q.b,sum,correct,distractors:distractorList};
+});
+
+const ruleQuestions = [
+  {rule:9, cols:[0,8,3,44], missIdx:3},
+  {rule:11, cols:[3,22,4,27], missIdx:3},
+  {rule:8, cols:[24,33,51,45], missIdx:3},
+  {rule:10, cols:[6,15,20,30], missIdx:3},
+];
+
+const hopQuestions = [
+  {start:0, step:2, count:7},
+  {start:0, step:5, count:6},
+  {start:0, step:10, count:6},
+  {start:1, step:2, count:7},
+];
+
+/* ---------------- STATE ---------------- */
+let state = {mode:null, idx:0, score:0, total:0, answered:false};
+
+function startMode(id){
+  state = {mode:id, idx:0, score:0, total: (id==='ten'?tenQuestions.length: id==='rule'?ruleQuestions.length: hopQuestions.length), answered:false};
+  menuEl.style.display='none';
+  gameEl.style.display='block';
+  renderQuestion();
+}
+
+function pips(){
+  let html = '<div class="progress-pips">';
+  for(let i=0;i<state.total;i++){
+    let cls = i<state.idx ? 'done' : (i===state.idx?'now':'');
+    html += `<div class="pip ${cls}"></div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function topbar(){
+  return `<div class="topbar"><button class="backbtn" onclick="renderMenu()">&larr; Machines</button>${pips()}</div>`;
+}
+
+function renderQuestion(){
+  state.answered=false;
+  if(state.mode==='ten') renderTen();
+  else if(state.mode==='rule') renderRule();
+  else renderHop();
+}
+
+/* ---- Mode 1: Ten Frame ---- */
+let currentTenOpts = [];
+function renderTen(){
+  const q = tenQuestions[state.idx];
+  currentTenOpts = shuffleArr([q.correct, ...q.distractors]);
+  gameEl.innerHTML = `
+    <div class="card">
+      ${topbar()}
+      <div class="qtitle">${q.a} + ${q.b} = ?</div>
+      <div class="frames">
+        <div class="frame-col">${tenFrameHTML(q.a,'teal')}<div class="frame-label">${q.a}</div></div>
+        <div class="frame-col">${tenFrameHTML(q.b,'amber')}<div class="frame-label">${q.b}</div></div>
+      </div>
+      <div style="text-align:center;font-size:13px;color:#777;margin-bottom:10px;">Move dots to fill the first frame to 10. Which is right?</div>
+      <div class="options" id="optWrap">
+        ${currentTenOpts.map((o,i)=>`<div class="opt" data-i="${i}" onclick="pickTen(${i})">${o}</div>`).join('')}
+      </div>
+      <div class="feedback" id="fb"></div>
+      <button class="nextbtn" id="nextBtn" onclick="nextQ()">Next →</button>
+    </div>
+  `;
+}
+function pickTen(i){
+  if(state.answered) return;
+  state.answered = true;
+  const q = tenQuestions[state.idx];
+  const opts = document.querySelectorAll('#optWrap .opt');
+  opts.forEach(o=>o.classList.add('disabled'));
+  const chosen = currentTenOpts[i];
+  const fb = document.getElementById('fb');
+  if(chosen === q.correct){
+    opts[i].classList.add('correct');
+    state.score++;
+    fb.className='feedback good show';
+    fb.textContent = `Yes! ${q.correct} — nice ten-making! 🎉`;
+  } else {
+    opts[i].classList.add('wrong');
+    currentTenOpts.forEach((o,idx)=>{ if(o===q.correct) opts[idx].classList.add('correct'); });
+    fb.className='feedback bad show';
+    fb.textContent = `Close! The answer is ${q.correct}. Try to see 10 first, then add what's left.`;
+  }
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+/* ---- Mode 2: Rule tables ---- */
+function renderRule(){
+  const q = ruleQuestions[state.idx];
+  const topRow = q.cols;
+  const bottomRow = q.cols.map((c,i)=> i===q.missIdx ? null : c+q.rule);
+  gameEl.innerHTML = `
+    <div class="card">
+      ${topbar()}
+      <div class="qtitle">What's the robot's rule? Then fill in the missing number.</div>
+      <div class="table-wrap">
+        <table class="rule-table">
+          <tr>${topRow.map(v=>`<td>${v}</td>`).join('')}</tr>
+          <tr>${bottomRow.map(v=> v===null ? `<td class="miss">?</td>` : `<td>${v}</td>`).join('')}</tr>
+        </table>
+      </div>
+      <div class="options" id="optWrap">
+        ${shuffledRuleOptions(q.rule).map((r,i)=>`<div class="opt" data-i="${i}" onclick="pickRule(${i}, ${r})">Add ${r}</div>`).join('')}
+      </div>
+      <div class="feedback" id="fb"></div>
+      <div id="fillWrap"></div>
+      <button class="nextbtn" id="nextBtn" onclick="nextQ()">Next →</button>
+    </div>
+  `;
+}
+function shuffledRuleOptions(correct){
+  let set = new Set([correct]);
+  while(set.size<3){
+    let d = correct + (Math.random()<0.5?-1:1)*(1+Math.floor(Math.random()*2));
+    if(d>0) set.add(d);
+  }
+  return shuffleArr(Array.from(set));
+}
+function pickRule(i, val){
+  if(state.answered) return;
+  const q = ruleQuestions[state.idx];
+  const opts = document.querySelectorAll('#optWrap .opt');
+  opts.forEach(o=>o.classList.add('disabled'));
+  const fb = document.getElementById('fb');
+  if(val === q.rule){
+    opts[i].classList.add('correct');
+    fb.className='feedback good show';
+    fb.textContent = `Rule found: Add ${q.rule}! Now type the missing number below.`;
+    state.answered = 'ruleFound';
+    showFillIn(q);
+  } else {
+    opts[i].classList.add('wrong');
+    fb.className='feedback bad show';
+    fb.textContent = `Not quite — check two columns: what number was added each time?`;
+    opts.forEach(o=>o.classList.remove('disabled'));
+    opts[i].classList.add('disabled');
+  }
+}
+function showFillIn(q){
+  const missVal = q.cols[q.missIdx] + q.rule;
+  document.getElementById('fillWrap').innerHTML = `
+    <div class="rule-input-row">
+      <input type="number" id="fillInput" placeholder="?">
+      <button class="checkbtn" onclick="checkFill(${missVal})">Check</button>
+    </div>
+  `;
+}
+function checkFill(correctVal){
+  const input = document.getElementById('fillInput');
+  const fb = document.getElementById('fb');
+  if(parseInt(input.value,10) === correctVal){
+    fb.className='feedback good show';
+    fb.textContent = `Perfect! ${correctVal} is right. 🎉`;
+    state.score++;
+    state.answered = true;
+    document.getElementById('nextBtn').classList.add('show');
+  } else {
+    fb.className='feedback bad show';
+    fb.textContent = `Try again — add the rule number to the top number in that column.`;
+  }
+}
+
+/* ---- Mode 3: Skip counting hops ---- */
+function renderHop(){
+  const q = hopQuestions[state.idx];
+  const seq = [];
+  for(let i=0;i<q.count;i++) seq.push(q.start + i*q.step);
+  const blankIdx = q.count-2; // ask for the second-to-last hop
+  gameEl.innerHTML = `
+    <div class="card">
+      ${topbar()}
+      <div class="qtitle">Hop by ${q.step}s! What number is missing?</div>
+      <div class="hopline">
+        ${seq.map((v,i)=> i===blankIdx ? `<div class="hop blank">?</div>` : `<div class="hop given">${v}</div>`).join('')}
+      </div>
+      <div class="rule-input-row">
+        <input type="number" id="hopInput" placeholder="?">
+        <button class="checkbtn" onclick="checkHop(${seq[blankIdx]})">Check</button>
+      </div>
+      <div class="feedback" id="fb"></div>
+      <button class="nextbtn" id="nextBtn" onclick="nextQ()">Next →</button>
+    </div>
+  `;
+}
+function checkHop(correctVal){
+  if(state.answered) return;
+  const input = document.getElementById('hopInput');
+  const fb = document.getElementById('fb');
+  if(parseInt(input.value,10) === correctVal){
+    fb.className='feedback good show';
+    fb.textContent = `Hop hop hooray! ${correctVal} is correct! 🐸`;
+    state.score++;
+    state.answered = true;
+    document.getElementById('nextBtn').classList.add('show');
+  } else {
+    fb.className='feedback bad show';
+    fb.textContent = `Almost — count the hops before and after the "?" to find the pattern.`;
+  }
+}
+
+/* ---- Navigation ---- */
+function nextQ(){
+  state.idx++;
+  if(state.idx >= state.total){
+    renderDone();
+  } else {
+    renderQuestion();
+  }
+}
+
+function renderDone(){
+  const pct = Math.round((state.score/state.total)*100);
+  let emoji = '🌟', msg = 'Great effort — every round makes the machines easier!';
+  if(pct===100){ emoji='🏆'; msg = 'Perfect score! You out-smarted every robot!'; }
+  else if(pct>=70){ emoji='🎉'; msg='Awesome work — you\'re getting really strong at this!'; }
+  gameEl.innerHTML = `
+    <div class="card done-screen">
+      <div class="big-emoji">${emoji}</div>
+      <h2>${state.score} / ${state.total}</h2>
+      <p>${msg}</p>
+      <button class="retry-btn" onclick="startMode('${state.mode}')">Play Again</button>
+      <button class="home-btn" onclick="renderMenu()">Choose Machine</button>
+    </div>
+  `;
+}
+
+renderMenu();
+</script>
+</body>
+</html>
